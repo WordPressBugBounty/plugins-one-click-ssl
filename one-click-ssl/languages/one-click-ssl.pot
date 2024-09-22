@@ -1,0 +1,420 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: One Click SSL\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-07-25 14:13+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.6.3; wp-6.1\n"
+"X-Domain: one-click-ssl"
+
+#: ssl.php:659
+#, php-format
+msgid ""
+"%s Insecure resources found on the URL, make them https:// for SSL to "
+"validate"
+msgstr ""
+
+#: ssl.php:134
+msgid "About One Click SSL"
+msgstr ""
+
+#: views/settings.php:54
+msgid "Activate"
+msgstr ""
+
+#: views/settings-general.php:38
+msgid "Admin Dashboard Only"
+msgstr ""
+
+#: views/settings-general.php:64
+msgid "Admin Menu"
+msgstr ""
+
+#: views/settings.php:59
+msgid "An error occurred, please try again."
+msgstr ""
+
+#: views/settings-network-general.php:22
+msgid "By turning this on, SSL will be enabled on all sites on the network."
+msgstr ""
+
+#: views/settings-status.php:43 views/settings-status.php:60
+msgid "Certificate is not valid"
+msgstr ""
+
+#: views/settings-status.php:29
+msgid "Certificate is valid"
+msgstr ""
+
+#: views/setup.php:59
+msgid "Check SSL Support"
+msgstr ""
+
+#: views/settings-scanner.php:12
+msgid "Choose the URL to scan for insecure resources."
+msgstr ""
+
+#: views/settings-general.php:40
+msgid "Choose where you want http:// URLs to be changed to https://"
+msgstr ""
+
+#: ssl.php:308
+msgid "Dismiss forever"
+msgstr ""
+
+#: views/settings-about.php:16
+msgid "Documentation"
+msgstr ""
+
+#: ssl.php:293 views/setup.php:103
+msgid "Enable SSL"
+msgstr ""
+
+#: views/settings-network-general.php:19
+msgid "Enable SSL Network Wide?"
+msgstr ""
+
+#: views/setup.php:43
+msgid "Enable SSL With One Click"
+msgstr ""
+
+#: views/settings-general.php:22
+msgid "Enable SSL?"
+msgstr ""
+
+#: views/settings-general.php:67
+msgid ""
+"Enable this option to move the admin menu item under Tools in your WordPress "
+"dashboard."
+msgstr ""
+
+#: views/settings-general.php:37
+msgid "Everywhere"
+msgstr ""
+
+#: views/settings-status.php:28
+#, php-format
+msgid "Expires: %s"
+msgstr ""
+
+#: ssl.php:123 ssl.php:126
+msgid "General Settings"
+msgstr ""
+
+#: views/settings-about.php:19
+msgid "Get Hosting with Free SSL"
+msgstr ""
+
+#: views/setup.php:84
+msgid "Get Hosting with SSL"
+msgstr ""
+
+#: views/setup.php:82
+msgid "Get WordPress hosting with free, auto SSL."
+msgstr ""
+
+#: views/settings-submit.php:14 views/settings-submit.php:16
+msgid "Go to Setup"
+msgstr ""
+
+#: views/setup.php:131 views/setup.php:133
+msgid "Go to SSL Settings"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://tribulant.com"
+msgstr ""
+
+#. URI of the plugin
+msgid "https://tribulant.com/plugins/view/18/wordpress-one-click-ssl-plugin"
+msgstr ""
+
+#: ssl.php:267
+msgid "If you are uncertain, click Cancel below."
+msgstr ""
+
+#: ssl.php:127
+msgid "Insecure Resources Scanner"
+msgstr ""
+
+#: views/settings.php:41
+msgid "Install Newsletter Plugin"
+msgstr ""
+
+#: views/settings.php:60
+msgid "Install Now"
+msgstr ""
+
+#: views/setup.php:75
+msgid "Install/Enable SSL on Hosting"
+msgstr ""
+
+#: views/settings.php:50
+msgid "Installing"
+msgstr ""
+
+#: views/settings-status.php:27
+#, php-format
+msgid "Issued by: %s"
+msgstr ""
+
+#: views/settings-general.php:8 views/settings-network-general.php:8
+msgid ""
+"It appears like your server does not support SSL, please ask your hosting "
+"provider."
+msgstr ""
+
+#: views/settings-scanner.php:11
+msgid "Leave empty for homepage or fill in a slug e.g., contact-us/"
+msgstr ""
+
+#: ssl.php:308
+msgid "leave your rating"
+msgstr ""
+
+#: views/settings-general.php:66
+msgid "Move the WordPress admin menu under Tools."
+msgstr ""
+
+#: ssl.php:673
+msgid "No insecure resources found, SSL will validate!"
+msgstr ""
+
+#. Name of the plugin
+#: ssl.php:105 ssl.php:109 ssl.php:109 ssl.php:111 ssl.php:111 ssl.php:308
+#: views/settings.php:16 views/settings-network.php:16
+msgid "One Click SSL"
+msgstr ""
+
+#: views/setup.php:87
+msgid "OR"
+msgstr ""
+
+#: views/setup.php:90
+msgid "Override, I am sure SSL works (not recommended)"
+msgstr ""
+
+#: views/settings-about.php:13
+msgid "Plugin Page"
+msgstr ""
+
+#: ssl.php:135
+msgid "Recommended Plugin"
+msgstr ""
+
+#: views/settings-general.php:51
+msgid "Redirect to Non-SSL"
+msgstr ""
+
+#: ssl.php:684
+msgid "Request failed, please try again."
+msgstr ""
+
+#: views/settings-submit.php:24
+msgid "Save Configuration"
+msgstr ""
+
+#: ssl.php:122 ssl.php:125
+msgid "Save Settings"
+msgstr ""
+
+#: views/settings-scanner.php:3
+msgid ""
+"Scan a URL for insecure resources like images, stylesheets, scripts, etc., "
+"which invalidate/break SSL."
+msgstr ""
+
+#: views/settings-scanner.php:19
+msgid "Scan Now"
+msgstr ""
+
+#: ssl.php:339 ssl.php:342
+msgid "Settings"
+msgstr ""
+
+#: ssl.php:205 ssl.php:225
+msgid "Settings have been saved"
+msgstr ""
+
+#: views/setup.php:33
+msgid "SSL Already Enabled"
+msgstr ""
+
+#: views/settings-general.php:35
+msgid "SSL Areas"
+msgstr ""
+
+#: views/setup.php:120
+msgid "SSL could not be enabled, please try again."
+msgstr ""
+
+#: views/setup.php:111
+msgid "SSL Enabled"
+msgstr ""
+
+#: views/setup.php:113
+msgid "SSL enabled, you will now be redirected, please log in again."
+msgstr ""
+
+#: views/setup.php:118
+msgid "SSL Failed"
+msgstr ""
+
+#: views/setup.php:78
+msgid ""
+"SSL is not supported, please ask your hosting provider to install and "
+"configure SSL."
+msgstr ""
+
+#: ssl.php:599
+#, php-format
+msgid ""
+"SSL is not supported. Website returned response code %s over SSL. Please ask "
+"your hosting provider to check for you."
+msgstr ""
+
+#: views/setup.php:67
+msgid "SSL is Supported"
+msgstr ""
+
+#: views/setup.php:70
+msgid "SSL is supported on your hosting, you may enable it."
+msgstr ""
+
+#: ssl.php:293
+#, php-format
+msgid "SSL not enabled, you are on an insecure connection. %s"
+msgstr ""
+
+#. Description of the plugin
+msgid ""
+"SSL redirect and automatic https:// resource conversion for your WordPress "
+"website."
+msgstr ""
+
+#: ssl.php:131
+msgid "SSL Status"
+msgstr ""
+
+#: views/setup.php:53
+msgid "Step 1"
+msgstr ""
+
+#: views/setup.php:97
+msgid "Step 2"
+msgstr ""
+
+#: views/setup.php:19
+msgid ""
+"Thank you for installing One Click SSL powered by <a href=\"https:"
+"//tribulant.com\" target=\"_blank\">Tribulant Software</a>, the ultimate "
+"WordPress SSL plugin which will redirect all non-SSL pages to SSL and ensure "
+"that all resources on your SSL pages are loaded over SSL as well."
+msgstr ""
+
+#: views/setup.php:93
+#, php-format
+msgid ""
+"This is not recommended and can render your site inaccessible if SSL does "
+"not work. Test it first to see if it loads: %s"
+msgstr ""
+
+#: views/setup.php:55
+msgid ""
+"To check if SSL is supported on your hosting, click the \"Check SSL "
+"Support\" button below."
+msgstr ""
+
+#: views/setup.php:46
+msgid ""
+"To use SSL, simply follow Step 1 below to check if SSL is supported on your "
+"hosting, and if it is, use Step 2 to enable SSL."
+msgstr ""
+
+#. Author of the plugin
+msgid "Tribulant Software"
+msgstr ""
+
+#: views/settings-general.php:25
+msgid "Turn this on to globally redirect all URLs and resources"
+msgstr ""
+
+#: ssl.php:679
+#, php-format
+msgid "URL could not be loaded - Code %s"
+msgstr ""
+
+#: views/settings-scanner.php:8
+msgid "URL to Scan"
+msgstr ""
+
+#: views/setup.php:26
+#, php-format
+msgid "Version %s"
+msgstr ""
+
+#: views/settings-general.php:39
+msgid "Website Front-end Only"
+msgstr ""
+
+#: views/setup.php:16
+msgid "Welcome to One Click SSL"
+msgstr ""
+
+#: views/settings-general.php:54
+msgid ""
+"With SSL disabled, you can turn on this setting to redirect all https:// "
+"pages to non-SSL automatically."
+msgstr ""
+
+#: views/setup.php:99
+msgid ""
+"With SSL supported on your hosting, you may click the \"Enable SSL\" button "
+"below."
+msgstr ""
+
+#: views/settings-general.php:24
+msgid "Yes, enable SSL and redirect all URLs."
+msgstr ""
+
+#: views/settings-network-general.php:21
+msgid "Yes, enable SSL on all sites on the network."
+msgstr ""
+
+#: views/settings-general.php:53
+msgid "Yes, redirect all pages to non-SSL"
+msgstr ""
+
+#: views/setup.php:36
+msgid "You are already on SSL (https://) so there is nothing left to do!"
+msgstr ""
+
+#: ssl.php:234 ssl.php:589 ssl.php:614 ssl.php:633 ssl.php:704
+msgid "You do not have permission"
+msgstr ""
+
+#: ssl.php:308
+#, php-format
+msgid ""
+"You have been using %s for some time. Please consider to %s on %s. We "
+"appreciate it very much! %s"
+msgstr ""
+
+#: views/settings-status.php:59
+msgid ""
+"You might be running on a local/test environment. The correct status will "
+"show up after you move to a live environment."
+msgstr ""
+
+#: ssl.php:178
+msgid "You to not have permission"
+msgstr ""
