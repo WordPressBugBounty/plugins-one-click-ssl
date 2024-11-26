@@ -3,8 +3,8 @@ Contributors: contrid
 Donate link: https://tribulant.com
 Tags: ssl, https, redirect, mixed-content, resources, http, secure, certificate, insecure content
 Requires at least: 4.6
-Tested up to: 6.6.1
-Stable tag: 1.6
+Tested up to: 6.7.1
+Stable tag: 1.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,9 @@ No, it is not, but for the security and peace of mind of your users, it is highl
 == Changelog ==
 
 See all <a href="https://tribulant.com/docs/one-click-ssl-plugin/11098/#doc6">releases and full changelogs</a> in our docs.
+
+= 1.7 =
+* FIX: Compatibility with WordPress 6.7 textdomain.
 
 = 1.6 =
 * FIX: AJAX calls error after update. If you are unable to update your plugins after using v1.5, use FTP to update to this version. In wp-content/plugins, you can either remove the folder for One Click SSL and reinstall in WordPress, or overwrite all files with the files from this archive.

@@ -4,7 +4,7 @@
 Plugin Name: One Click SSL
 Plugin URI: https://tribulant.com/plugins/view/18/
 Description: SSL redirect and automatic https:// resource conversion for your WordPress website.
-Version: 1.6
+Version: 1.7
 Author: Tribulant Software
 Author URI: https://tribulant.com
 Text Domain: one-click-ssl
@@ -34,14 +34,7 @@ if (!class_exists('OCSSL')) {
 		
 		function __construct() {
 		
-			require_once(ABSPATH . DS . 'wp-admin' . DS . 'includes' . DS . 'plugin.php');
-			
-			$this -> plugin_data = get_plugin_data(__FILE__);
-			$this -> plugin_path = plugin_dir_path(__FILE__);
-			$this -> plugin_url = plugin_dir_url(__FILE__);
-			$this -> plugin_base = plugin_basename(__FILE__);
-			$this -> plugin_name = dirname($this -> plugin_base);
-			$this -> plugin_version = $this -> plugin_data['Version'];
+		
 		}
 		
 		function activation_hook() {
@@ -76,6 +69,16 @@ if (!class_exists('OCSSL')) {
 		}
 		
 		function init_textdomain() {
+
+			require_once(ABSPATH . DS . 'wp-admin' . DS . 'includes' . DS . 'plugin.php');
+			
+			$this -> plugin_data = get_plugin_data(__FILE__);
+			$this -> plugin_path = plugin_dir_path(__FILE__);
+			$this -> plugin_url = plugin_dir_url(__FILE__);
+			$this -> plugin_base = plugin_basename(__FILE__);
+			$this -> plugin_name = dirname($this -> plugin_base);
+			$this -> plugin_version = $this -> plugin_data['Version'];
+
 			if (function_exists('load_plugin_textdomain')) {
 				load_plugin_textdomain($this -> plugin_name, false, dirname(plugin_basename(__FILE__)) . DS . 'languages');
 			}
@@ -882,7 +885,7 @@ if (!class_exists('OCSSL')) {
 	add_action('init', array($ocssl, 'start_buffer'), 10, 1);
 	add_action('shutdown', array($ocssl, 'stop_buffer'), 10, 1);
 	add_action('ocssl_ratereviewhook', array($ocssl, 'ratereview_hook'), 10, 1);
-	add_action('init', array($ocssl, 'init_textdomain'), 10, 1);
+	add_action('after_theme_setup', array($ocssl, 'init_textdomain'), 10, 1);
 	add_action('admin_init', array($ocssl, 'custom_redirect'), 10, 1);
 	add_action('admin_head', array($ocssl, 'admin_head'), 10, 1);
 	
