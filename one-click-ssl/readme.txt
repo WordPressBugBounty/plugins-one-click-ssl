@@ -4,11 +4,11 @@ Donate link: https://tribulant.com
 Tags: ssl, https, redirect, mixed-content, resources, http, secure, certificate, insecure content
 Requires at least: 4.6
 Tested up to: 6.7.1
-Stable tag: 1.7
+Stable tag: 1.7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Enable SSL to redirect all pages to SSL and load all resources over SSL.
+Enable SSL (https://) to redirect all pages to SSL and load all resources over SSL.
 
 
 == Description ==
@@ -34,15 +34,15 @@ See our <a href="https://tribulant.com/docs/one-click-ssl-plugin/11098">online d
 Follow these steps to install the plugin:
 
 1. Upload the plugin files to the `/wp-content/plugins/one-click-ssl` directory, or install the plugin through the WordPress plugins screen directly.
-1. Activate the plugin through the 'Plugins' screen in WordPress
-1. Use the setup screen after activation to enable SSL or go to the One Click SSL admin menu item to enable.
+2. Activate the plugin through the 'Plugins' screen in WordPress
+3. Use the setup screen after activation to enable SSL or go to the One Click SSL admin menu item to enable.
 
 
 == Frequently Asked Questions ==
 
 = What is SSL? =
 
-SSL stands for Secure Sockets Layer and it is a protocol which encrypts all data in transit on your website to prevent theft, interception or hacking.
+SSL stands for Secure Sockets Layer and it is a protocol which encrypts all data in transit on your website to prevent theft, interception, and/or hacking.
 
 
 = What is required to use SSL? =
@@ -52,7 +52,7 @@ You need to have SSL support on your hosting/server. This is done by installing 
 
 = Is SSL mandatory? =
 
-No, it is not, but for the security and peace of mind of your users, it is highly recommended. Many modern day browsers are warning users about insecure websites, and some search engines rank you lower if you do not activate SSL.
+No, it is not, but for the security and peace of mind of your users, it is highly recommended. All Internet browsers are warning users about insecure websites, and search engines rank you lower if you do not activate SSL. It is practically a must now.
 
 
 == Screenshots ==
@@ -66,6 +66,12 @@ No, it is not, but for the security and peace of mind of your users, it is highl
 == Changelog ==
 
 See all <a href="https://tribulant.com/docs/one-click-ssl-plugin/11098/#doc6">releases and full changelogs</a> in our docs.
+
+= 1.7.2 =
+* FIX: Plugin assets failed to load due to the previous update concerning WordPress 6.7 textdomain compatibility.
+
+= 1.7.1 =
+* FIX: Bug after 1.7. 
 
 = 1.7 =
 * FIX: Compatibility with WordPress 6.7 textdomain.

@@ -4,7 +4,7 @@
 Plugin Name: One Click SSL
 Plugin URI: https://tribulant.com/plugins/view/18/
 Description: SSL redirect and automatic https:// resource conversion for your WordPress website.
-Version: 1.7
+Version: 1.7.2
 Author: Tribulant Software
 Author URI: https://tribulant.com
 Text Domain: one-click-ssl
@@ -37,6 +37,16 @@ if (!class_exists('OCSSL')) {
 		
 		}
 		
+
+		public function load_plugin_data() {
+	        $this->plugin_data = get_plugin_data(__FILE__);
+	        $this->plugin_path = plugin_dir_path(__FILE__);
+	        $this->plugin_url = plugin_dir_url(__FILE__);
+	        $this->plugin_base = plugin_basename(__FILE__);
+	        $this->plugin_name = dirname($this->plugin_base);
+	        $this->plugin_version = $this->plugin_data['Version'];
+	    }
+
 		function activation_hook() {
 			
 			// Add some default settings/options here
@@ -69,15 +79,6 @@ if (!class_exists('OCSSL')) {
 		}
 		
 		function init_textdomain() {
-
-			require_once(ABSPATH . DS . 'wp-admin' . DS . 'includes' . DS . 'plugin.php');
-			
-			$this -> plugin_data = get_plugin_data(__FILE__);
-			$this -> plugin_path = plugin_dir_path(__FILE__);
-			$this -> plugin_url = plugin_dir_url(__FILE__);
-			$this -> plugin_base = plugin_basename(__FILE__);
-			$this -> plugin_name = dirname($this -> plugin_base);
-			$this -> plugin_version = $this -> plugin_data['Version'];
 
 			if (function_exists('load_plugin_textdomain')) {
 				load_plugin_textdomain($this -> plugin_name, false, dirname(plugin_basename(__FILE__)) . DS . 'languages');
@@ -937,4 +938,17 @@ if (!class_exists('OCSSL')) {
             $ocssl->save_check_settings();
         }
     });
+	
+	add_action('init', 'ocssl_initialize', 5);
+
+	function ocssl_initialize() {
+	    // Make sure not to re-include plugin.php if it's already included
+	    if (!function_exists('get_plugin_data')) {
+	        require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+	    }
+	    
+	    global $ocssl;
+        $ocssl->load_plugin_data();
+	    
+	}
 }
