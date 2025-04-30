@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 	</div>
 	<div id="major-publishing-actions">
 		<div id="publishing-action">
-			<button class="button-primary button button-large" type="submit" name="save" value="1">
+			<button class="button-primary button button-large" type="submit" name="submit" value="1">
 				<i class="fa fa-check fa-fw"></i> <?php _e('Save Configuration', 'one-click-ssl'); ?>
 			</button>
 		</div>

@@ -3,28 +3,29 @@ Contributors: contrid
 Donate link: https://tribulant.com
 Tags: ssl, https, redirect, mixed-content, resources, http, secure, certificate, insecure content
 Requires at least: 4.6
-Tested up to: 6.7.1
-Stable tag: 1.7.2
+Tested up to: 6.8.1
+Stable tag: 1.7.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Enable SSL (https://) to redirect all pages to SSL and load all resources over SSL.
+Enable SSL/TLS (https://) to redirect all pages to SSL/TLS and load all resources over SSL/TLS.
 
 
 == Description ==
 
-A simple and easy to use WordPress SSL plugin which will redirect all non-SSL pages to SSL and ensure that all resources on your SSL pages are loaded over SSL as well.
+A simple and easy to use WordPress SSL plugin which will redirect all non-SSL pages to SSL/TLS and ensure that all resources on your SSL pages are loaded over SSL as well.
 
 It includes a user-friendly setup wizard upon activation to check if SSL is supported on the hosting/server before it allows the SSL to be enabled and that ensures that the website doesn't become inaccessible if SSL is not supported.
 
 
 = Plugin Features =
 
-* Check if SSL is supported on hosting/server
+* Check if SSL/TLS is supported on hosting/server
 * Enable SSL with a single click
 * Redirects all non-SSL URLs to https://
 * Converts all non-SSL resources (images, scripts, stylesheets, etc.) to https:// on pages
 * Redirect to non-SSL if SSL is not enabled
+* Multisite network compatibility (enable SSL for all sites from one location)
 
 See our <a href="https://tribulant.com/docs/one-click-ssl-plugin/11098">online documentation</a> for more details and detailed instructions.
 
@@ -33,8 +34,8 @@ See our <a href="https://tribulant.com/docs/one-click-ssl-plugin/11098">online d
 
 Follow these steps to install the plugin:
 
-1. Upload the plugin files to the `/wp-content/plugins/one-click-ssl` directory, or install the plugin through the WordPress plugins screen directly.
-2. Activate the plugin through the 'Plugins' screen in WordPress
+1. Upload the plugin files to the `/wp-content/plugins/one-click-ssl` directory, or install the plugin through the WordPress plugins page directly.
+2. Activate the plugin through the 'Plugins' page in WordPress.
 3. Use the setup screen after activation to enable SSL or go to the One Click SSL admin menu item to enable.
 
 
@@ -45,14 +46,25 @@ Follow these steps to install the plugin:
 SSL stands for Secure Sockets Layer and it is a protocol which encrypts all data in transit on your website to prevent theft, interception, and/or hacking.
 
 
+= What is TLS? =
+
+TLS stands for Transport Layer Security and supercedes SSL. It is a newer protocol and functions relatively the same as SSL but with improved security and compatibility.
+
+
+= What is the difference between SSL and TLS and why do we still refer to TLS certificates as SSL certificates? =
+
+TLS offers stronger encryption than SSL as SSL is outdated and has vulnerabilities. SSL certificates are actually TLS certificates, as TLS has replaced SSL.
+For familiarity and marketing reasons, almost everyone still refers to TLS as SSL.
+
+
 = What is required to use SSL? =
 
-You need to have SSL support on your hosting/server. This is done by installing an SSL certificate.
+You need to have SSL/TLS support on your hosting/server. This is done by installing an SSL/TLS certificate.
 
 
 = Is SSL mandatory? =
 
-No, it is not, but for the security and peace of mind of your users, it is highly recommended. All Internet browsers are warning users about insecure websites, and search engines rank you lower if you do not activate SSL. It is practically a must now.
+While it's not mandatory, it is highly recommended for the security and peace of mind of your users. All Internet browsers are warning users about insecure websites, and search engines rank you lower if you do not activate SSL. It is practically a must now.
 
 
 == Screenshots ==
@@ -67,11 +79,26 @@ No, it is not, but for the security and peace of mind of your users, it is highl
 
 See all <a href="https://tribulant.com/docs/one-click-ssl-plugin/11098/#doc6">releases and full changelogs</a> in our docs.
 
+= 1.7.3 =
+* ADD: Automatic Basic Authentication detection, allowing you to bypass htpasswd basic auth to check for SSL support.
+* ADD: Added support for the insecure resources scanner in WordPress multisite network admin, allowing network administrators to scan sites for HTTP resources.
+* IMPROVE: Detecting the protocol in <link> tags.
+* IMPROVE: All General Settings and the Insecure Resources Scanner now display in Multisites as well.
+* IMPROVE: Code updates.
+* FIX: Incompatibility with Ultimate Addons for Beaver Builder.
+* FIX: Wrong redirection after saving configuration in multisite.
+* FIX: PHP 8.3/8.4 error.
+* FIX: Insecure Resources Scanner detecting the SVG xmlns attributes as insecure content.
+* FIX: Insecure Resources Scanner now works well with different URLs, especially in multisites.
+* FIX: Insecure Resources Scanner now displays the full URLs of insecure resources (e.g.: http://example.com/image.jpg).
+* FIX: Move the admin menu option was not working in multisites. So, in multisites, it will now move it under the Settings menu.
+* FIX: A few bugs found in multisite networks.
+
 = 1.7.2 =
 * FIX: Plugin assets failed to load due to the previous update concerning WordPress 6.7 textdomain compatibility.
 
 = 1.7.1 =
-* FIX: Bug after 1.7. 
+* FIX: Bug after v1.7.
 
 = 1.7 =
 * FIX: Compatibility with WordPress 6.7 textdomain.
@@ -137,7 +164,7 @@ See all <a href="https://tribulant.com/docs/one-click-ssl-plugin/11098/#doc6">re
 * FIX: PHP output buffer issue.
 
 = 1.1 =
-* ADD: Multi-site network SSL support.
+* ADD: Multisite network SSL support.
 * ADD: Setting to redirect to non-SSL when SSL is turned off.
 * FIX: Replace HTTPS breaks on filters with Array/Object data.
 

@@ -3,8 +3,8 @@
 /*
 Plugin Name: One Click SSL
 Plugin URI: https://tribulant.com/plugins/view/18/
-Description: SSL redirect and automatic https:// resource conversion for your WordPress website.
-Version: 1.7.2
+Description: SSL/TLS redirect and automatic https:// resource conversion for your WordPress website.
+Version: 1.7.3
 Author: Tribulant Software
 Author URI: https://tribulant.com
 Text Domain: one-click-ssl
@@ -33,11 +33,48 @@ if (!class_exists('OCSSL')) {
 		var $http_urls = array();
 		
 		function __construct() {
-		
-		
+			 add_action('init', array($this, 'register_ssl_check_endpoint'));
 		}
 		
 
+		
+// Update the register_ssl_check_endpoint method
+function register_ssl_check_endpoint() {
+    // Register the rewrite rule
+    add_rewrite_rule(
+        '^ocssl-check$',
+        'index.php?ocssl_check=1',
+        'top'
+    );
+
+    // Add the query var
+    add_filter('query_vars', function($vars) {
+        $vars[] = 'ocssl_check';
+        return $vars;
+    });
+
+    // Handle the endpoint request
+    add_action('template_redirect', function() {
+        if (get_query_var('ocssl_check')) {
+            // Set headers for JSON response
+            header('Content-Type: application/json');
+            header('Cache-Control: no-cache');
+
+            // Return a simple JSON response
+            $response = array(
+                'success' => true,
+                'message' => 'SSL check endpoint reached.',
+            );
+
+            // Output the response and exit
+            wp_send_json($response);
+            exit;
+        }
+    });
+}
+
+		
+		
 		public function load_plugin_data() {
 	        $this->plugin_data = get_plugin_data(__FILE__);
 	        $this->plugin_path = plugin_dir_path(__FILE__);
@@ -49,6 +86,9 @@ if (!class_exists('OCSSL')) {
 
 		function activation_hook() {
 			
+		    $this->register_ssl_check_endpoint();
+		    flush_rewrite_rules();
+
 			// Add some default settings/options here
 			add_option('ocssl', 0);
 			add_option('ocssl_areas', "all");
@@ -75,6 +115,10 @@ if (!class_exists('OCSSL')) {
 			update_option('ocssl_dismissed-ssloff', 0);
 			update_option('ocssl_dismissed-ratereview', 0);
 			
+
+		    // Flush rewrite rules to remove the custom endpoint
+		    flush_rewrite_rules();
+
 			return true;
 		}
 		
@@ -106,23 +150,65 @@ if (!class_exists('OCSSL')) {
 		}
 		
 		function admin_menu() {
-		
-			// If this is a multi-site network
-			if (is_multisite() && is_network_admin()) {
-				$this -> ocssl_menu = add_menu_page(__('One Click SSL', 'one-click-ssl'), __('One Click SSL', 'one-click-ssl'), 'manage_options', 'one-click-ssl', array($this, 'admin_network'), null, null);
-			} else {
-				$ocssl_toolsmenu = get_option('ocssl_toolsmenu');
-				if (!empty($ocssl_toolsmenu)) {
-					$this -> ocssl_menu = add_management_page(__('One Click SSL', 'one-click-ssl'), __('One Click SSL', 'one-click-ssl'), 'manage_options', 'one-click-ssl', array($this, 'admin'));
-				} else {
-					$this -> ocssl_menu = add_menu_page(__('One Click SSL', 'one-click-ssl'), __('One Click SSL', 'one-click-ssl'), 'manage_options', 'one-click-ssl', array($this, 'admin'), null, null);
-				}
-			}
-			
-			add_action('admin_head-' . $this -> ocssl_menu, array($this, 'admin_head_ocssl'));
-			
-			$this -> add_dashboard();
+
+		    // Determine where the “One Click SSL” item should go
+		    if ( is_multisite() && is_network_admin() ) {
+		        // in network admin we save it as a site‐option
+		        $ocssl_toolsmenu = get_site_option( 'ocssl_toolsmenu' );
+		    } else {
+		        // on single‐site (or in sub‐site admin) we use the regular option
+		        $ocssl_toolsmenu = get_option( 'ocssl_toolsmenu' );
+		    }
+
+		    // If this is a multi‐site network
+		    if ( is_multisite() && is_network_admin() ) {
+		        if ( ! empty( $ocssl_toolsmenu ) ) {
+		            // under Settings
+		            $this->ocssl_menu = add_submenu_page(
+		                'settings.php',
+		                __( 'One Click SSL', 'one-click-ssl' ),
+		                __( 'One Click SSL', 'one-click-ssl' ),
+		                'manage_options',
+		                'one-click-ssl',
+		                [ $this, 'admin_network' ]
+		            );
+		        } else {
+		            // top‐level menu
+		            $this->ocssl_menu = add_menu_page(
+		                __( 'One Click SSL', 'one-click-ssl' ),
+		                __( 'One Click SSL', 'one-click-ssl' ),
+		                'manage_options',
+		                'one-click-ssl',
+		                [ $this, 'admin_network' ]
+		            );
+		        }
+		    } else {
+		        // single-site or sub-site admin
+		        if ( ! empty( $ocssl_toolsmenu ) ) {
+		            // under Tools
+		            $this->ocssl_menu = add_management_page(
+		                __( 'One Click SSL', 'one-click-ssl' ),
+		                __( 'One Click SSL', 'one-click-ssl' ),
+		                'manage_options',
+		                'one-click-ssl',
+		                [ $this, 'admin' ]
+		            );
+		        } else {
+		            // top-level
+		            $this->ocssl_menu = add_menu_page(
+		                __( 'One Click SSL', 'one-click-ssl' ),
+		                __( 'One Click SSL', 'one-click-ssl' ),
+		                'manage_options',
+		                'one-click-ssl',
+		                [ $this, 'admin' ]
+		            );
+		        }
+		    }
+
+		    add_action( 'admin_head-' . $this->ocssl_menu, [ $this, 'admin_head_ocssl' ] );
+		    $this->add_dashboard();
 		}
+
 		
 		function admin_head_ocssl() {		
 			if (is_multisite() && is_network_admin()) {
@@ -131,9 +217,10 @@ if (!class_exists('OCSSL')) {
 			} else {			
 				add_meta_box('submitdiv', __('Save Settings', 'one-click-ssl'), array($this, "settings_submit"), $this -> ocssl_menu, 'side', 'core');
 				add_meta_box('generaldiv', __('General Settings', 'one-click-ssl'), array($this, "settings_general"), $this -> ocssl_menu, 'normal', 'core');
-				add_meta_box('scannerdiv', __('Insecure Resources Scanner', 'one-click-ssl'), array($this, "settings_scanner"), $this -> ocssl_menu, 'normal', 'core');
 			}
 			
+			add_meta_box('scannerdiv', __('Insecure Resources Scanner', 'one-click-ssl'), array($this, "settings_scanner"), $this -> ocssl_menu, 'normal', 'core');
+
 			// Normal boxes
 			add_meta_box('statusdiv', __('SSL Status', 'one-click-ssl'), array($this, 'settings_status'), $this -> ocssl_menu, 'normal', 'core');
 			
@@ -141,6 +228,7 @@ if (!class_exists('OCSSL')) {
 			add_meta_box('aboutdiv', __('About One Click SSL', 'one-click-ssl'), array($this, 'settings_about'), $this -> ocssl_menu, 'side', 'core');
 			add_meta_box('pluginsdiv', __('Recommended Plugin', 'one-click-ssl'), array($this, 'settings_plugins'), $this -> ocssl_menu, 'side', 'core');
 			
+
             if(!class_exists('Fusion_Custom_Icon_Set')) {
                 do_action('do_meta_boxes', $this -> ocssl_menu, 'normal');
                 do_action('do_meta_boxes', $this -> ocssl_menu, 'side');
@@ -149,16 +237,18 @@ if (!class_exists('OCSSL')) {
 
 		function add_dashboard() {
 			add_dashboard_page(sprintf('One Click SSL %s', $this -> plugin_version), sprintf('One Click SSL %s', $this -> plugin_version), 'read', 'one-click-ssl-setup', array($this, 'admin_setup'));
-			
-			global $submenu;
-			if (isset($submenu['index.php'])) {
-				foreach ($submenu['index.php'] as $key => $value) {
-					if (!empty($value[2]) && $value[2] === 'one-click-ssl-setup') {
-						remove_submenu_page('index.php', 'one-click-ssl-setup');
-						break;
-					}
+		}
+
+		function remove_dashboard() 
+		{
+			?>
+			<style>
+				/* Hide the menu item linking to banners-about */
+				#adminmenu a[href="index.php?page=one-click-ssl-setup"] {
+					display: none !important;
 				}
-			}
+			</style>
+			<?php
 		}
 		
 		function settings_submit() {
@@ -218,24 +308,73 @@ if (!class_exists('OCSSL')) {
 			include($this -> plugin_path . 'views' . DS . 'settings.php');
 		}
 		
-		function admin_network() {
-			if (!empty($_POST)) {
-				check_admin_referer('ocssl-settings', 'security');
+		public function admin_network() {
+		    // Log request details
+		    error_log('OCSSL admin_network: REQUEST_METHOD=' . $_SERVER['REQUEST_METHOD']);
+		    error_log('OCSSL admin_network: REQUEST_URI=' . $_SERVER['REQUEST_URI']);
+		    error_log('OCSSL admin_network: POST=' . print_r($_POST, true));
 
-				update_site_option('ocssl_global', 0);
-				
-				foreach ($_POST as $pkey => $pval) {
-					update_site_option(sanitize_key($pkey), sanitize_text_field($pval));
-				}
-				
-				wp_cache_flush();
-				$this -> check_network_ssl();
-				
-				$this -> render_message(__('Settings have been saved', 'one-click-ssl'));
-				do_action('ocssl_network_settings_saved', $_POST);
-			}
-			
-			include($this -> plugin_path . 'views' . DS . 'settings-network.php');
+		    // Check if this is a form submission (POST request)
+		    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+		        // Verify nonce
+		        if (!check_admin_referer('ocssl-settings', 'security')) {
+		            error_log('OCSSL admin_network: Nonce verification failed');
+		            wp_die(__('Security check failed', 'one-click-ssl'));
+		        }
+
+		        // Log form submission
+		        if (isset($_POST['ocssl_form_submitted'])) {
+		            error_log('OCSSL admin_network: Form submitted with ocssl_form_submitted');
+		        }
+
+		        // Get current ocssl_global value
+		        $current_ocssl_global = get_site_option('ocssl_global');
+		        error_log('OCSSL admin_network: Current ocssl_global=' . $current_ocssl_global);
+
+		        // Set ocssl_global based on POST data
+		        $new_ocssl_global = isset($_POST['ocssl_global']) ? 1 : 0;
+		        update_site_option('ocssl_global', $new_ocssl_global);
+		        error_log('OCSSL admin_network: Saving ocssl_global=' . $new_ocssl_global);
+
+		        // Handle other fields
+		        $post_fields = ['ocssl_areas', 'ocssl_toolsmenu', 'ocssl_auth_username', 'ocssl_auth_password', 'ocssl_nonsslredirect'];
+		        foreach ($post_fields as $pkey) {
+		            if (isset($_POST[$pkey])) {
+		                if ($pkey === 'ocssl_auth_password') {
+		                    update_site_option(sanitize_key($pkey), $_POST[$pkey]);
+		                } else {
+		                    update_site_option(sanitize_key($pkey), sanitize_text_field($_POST[$pkey]));
+		                }
+		            } else {
+		                update_site_option(sanitize_key($pkey), '');
+		            }
+		        }
+
+		        // Flush cache
+		        wp_cache_flush();
+		        error_log('OCSSL admin_network: Cache flushed');
+
+		        // Run network SSL check
+		        $this->check_network_ssl();
+		        $updated_ocssl_global = get_site_option('ocssl_global');
+		        error_log('OCSSL admin_network: After check_network_ssl ocssl_global=' . $updated_ocssl_global);
+
+		        // Queue settings saved notice
+		        set_transient('ocssl_settings_notice', [
+		            'message' => __('Settings have been saved', 'one-click-ssl'),
+		            'type' => 'success',
+		            'dismissible' => true,
+		            'slug' => 'settings-saved'
+		        ], 30);
+		        
+		        do_action('ocssl_network_settings_saved', $_POST);
+
+		        // Redirect to prevent form resubmission
+		        wp_redirect(network_admin_url('admin.php?page=one-click-ssl'));
+		        exit;
+		    }
+
+		    include($this->plugin_path . 'views' . DS . 'settings-network.php');
 		}
 		
 		function admin_setup() {
@@ -267,6 +406,13 @@ if (!class_exists('OCSSL')) {
 				
 				wp_enqueue_script('one-click-ssl-editor', $this -> plugin_url . 'js/one-click-ssl-editor.js', array('jquery'), $this -> plugin_version, true);
 			}
+
+			wp_localize_script('one-click-ssl', 'ocssl', [
+			    'ajaxnonce' => [
+			        'scan' => wp_create_nonce('scan'),
+			        'dismiss' => wp_create_nonce('ocssl_dismiss_notice')
+			    ]
+			]);
 			
 			wp_register_script('one-click-ssl', $this -> plugin_url . 'js/one-click-ssl.js', array('jquery'), $this -> plugin_version, true);
 				
@@ -280,6 +426,10 @@ if (!class_exists('OCSSL')) {
 					'scan'						=>	wp_create_nonce('scan'),
 					'dismissed_notice'			=>	wp_create_nonce('dismissed_notice'),
 				),
+				// Add translations for auth form
+				'username_label' => __('Username:', 'one-click-ssl'),
+				'password_label' => __('Password:', 'one-click-ssl'),
+				'retry_button' => __('Retry with Credentials', 'one-click-ssl'),
 			);
 			
 			wp_localize_script('one-click-ssl', 'ocssl', $translation_array);
@@ -295,51 +445,40 @@ if (!class_exists('OCSSL')) {
 			return true;
 		}
 		
-		function admin_notices() {
-			
-			// Check if SSL is not running
-			if (!is_ssl()) {
-				$message = sprintf(__('SSL not enabled, you are on an insecure connection. %s', 'one-click-ssl'), '<a class="button button-primary" href="' . admin_url('index.php?page=one-click-ssl-setup') . '"><i class="fa fa-shield fa-fw"></i> ' . __('Enable SSL', 'one-click-ssl') . '</a>');
-				$this -> render_message($message, 'error', true, 'ssloff');
-			}
-			
-			// Rate & Review
+		public function admin_notices() {
+		    if (WP_DEBUG) {
+		        error_log('OCSSL admin_notices: Checking notices');
+		    }
 
-            if ( get_option( 'one_click_ssl_smart_rating_dismissed', false ) ) {
-                return;
-            }
-
-            $nonce = wp_create_nonce( 'one_click_ssl_feedback_notification_bar_nonce' );
-
-			$showmessage_ratereview = get_option('ocssl_showmessage_ratereview');
-			if (!empty($showmessage_ratereview)) {
-				$rate_url = "https://wordpress.org/support/plugin/one-click-ssl/reviews/?rate=5#new-post";
-				$message = sprintf(__('You have been using %s for some time. Please consider to %s on %s. We appreciate it very much! %s', 'one-click-ssl'), '<a href="https://wordpress.org/support/plugin/one-click-ssl/" target="_blank">' . __('One Click SSL', 'one-click-ssl') . '</a>', '<a href="' . $rate_url . '" target="_blank" class="button"><i class="fa fa-star"></i> ' . __('leave your rating', 'one-click-ssl') . '</a>', '<a href="https://wordpress.org/support/plugin/one-click-ssl/reviews/" target="_blank">WordPress.org</a>', '<button type="button" class="button my-custom-dismiss-button" data-nonce="' . $nonce .'">' . __('Dismiss forever', 'one-click-ssl') . '</button>');
-				$message .= "
-								<script>
-								jQuery('.my-custom-dismiss-button').on('click', function(e) {
-									e.preventDefault();
-                                var nonce =jQuery(this).attr('data-nonce');
-                                jQuery.post(ajaxurl,{action:'one_click_ssl_dismiss_smart_rating',nonce:nonce})
-								  jQuery('.notice-one-click-ssl .notice-dismiss').trigger('click');
-								});
-								</script>";
-				$this -> render_message($message, 'success', true, 'ratereview');
-			}
+		    if (!is_ssl()) {
+		        $message = sprintf(__('SSL not enabled, you are on an insecure connection. % мальшеs', 'one-click-ssl'), '<a class="button button-primary" href="' . admin_url('index.php?page=one-click-ssl-setup') . '"><i class="fa fa-shield fa-fw"></i> ' . __('Enable SSL', 'one-click-ssl') . '</a>');
+		        echo $this->render_message($message, 'error', true, 'ssloff');
+		    }
+		    
+		    if (!get_option('one_click_ssl_smart_rating_dismissed', false)) {
+		        $nonce = wp_create_nonce('ocssl_dismiss_notice');
+		        $showmessage_ratereview = get_option('ocssl_showmessage_ratereview');
+		        if (!empty($showmessage_ratereview)) {
+		            $rate_url = "https://wordpress.org/support/plugin/one-click-ssl/reviews/?rate=5#new-post";
+		            $message = sprintf(__('You have been using %s for some time. Please consider to %s on %s. We appreciate it very much! %s', 'one-click-ssl'), '<a href="https://wordpress.org/support/plugin/one-click-ssl/" target="_blank">' . __('One Click SSL', 'one-click-ssl') . '</a>', '<a href="' . $rate_url . '" target="_blank" class="button"><i class="fa fa-star"></i> ' . __('leave your rating', 'one-click-ssl') . '</a>', '<a href="https://wordpress.org/support/plugin/one-click-ssl/reviews/" target="_blank">WordPress.org</a>', '<button type="button" class="button my-custom-dismiss-button" data-nonce="' . $nonce .'" data-slug="ratereview">' . __('Dismiss forever', 'one-click-ssl') . '</button>');
+		            echo $this->render_message($message, 'success', true, 'ratereview');
+		        }
+		    }
+		    
+		    $settings_notice = get_transient('ocssl_settings_notice');
+		    if (WP_DEBUG) {
+		        error_log('OCSSL admin_notices: settings_notice=' . print_r($settings_notice, true));
+		    }
+		    if ($settings_notice && is_array($settings_notice)) {
+		        echo $this->render_message($settings_notice['message'], $settings_notice['type'], $settings_notice['dismissible'], $settings_notice['slug']);
+		        delete_transient('ocssl_settings_notice');
+		        if (WP_DEBUG) {
+		            error_log('OCSSL admin_notices: Rendered settings saved notice');
+		        }
+		    }
 		}
 		
-        public function dismiss_smart_rating() {
-            $nonce = isset($_POST['nonce']) ? $_POST['nonce'] : '';
-            $action = 'one_click_ssl_feedback_notification_bar_nonce';
-            if (!wp_verify_nonce($nonce, $action)) {
-                wp_send_json_error();
-            }
-
-            if ( false === get_option( 'one_click_ssl_smart_rating_dismissed' ) && false === update_option( 'one_click_ssl_smart_rating_dismissed', false ) ) {
-                add_option( 'one_click_ssl_smart_rating_dismissed', true );
-            }
-            wp_send_json_success();
-        }
+        
 
 
 		function plugin_action_links($actions = null, $plugin_file = null, $plugin_data = null, $context = null) {
@@ -356,77 +495,167 @@ if (!class_exists('OCSSL')) {
 			return $actions;
 		}
 		
-		function render_message($message = null, $type = 'success', $dismissible = true, $slug = null) {			
-			if (!empty($dismissible) && !empty($slug)) {
-				$dismissed = get_option('ocssl_dismissed-' . $slug);
-				if (!empty($dismissed)) {
-					return;
-				}
-			}
-			
-			if (!empty($message)) {
-				?>
-				
-				<div id="<?php echo $type; ?>" class="notice notice-<?php echo $type; ?> notice-one-click-ssl <?php echo (!empty($dismissible)) ? 'is-dismissible' : ''; ?>" data-notice="<?php echo esc_attr($slug); ?>">
-			        <p>
-				        <?php
-					        
-					        
-					    switch ($type) {
-						    case 'error'			:
-						    	echo '<i class="fa fa-times fa-fw"></i>';
-						    	break;
-						    case 'warning'			:
-						    	echo '<i class="fa fa-exclamation-triangle fa-fw"></i>';
-						    	break;
-						    case 'success'			:
-						    default 				:
-						    	echo '<i class="fa fa-check fa-fw"></i>';
-						    	break;
-					    }    
-				        
-				        ?>
-				        <?php echo $message; ?>
-				    </p>
-			    </div>
-				
-				<?php
-			}
+		function render_message($message = null, $type = 'success', $dismissible = true, $slug = null) {
+		    if (!empty($dismissible) && !empty($slug)) {
+		        $dismissed = get_option('ocssl_dismissed-' . $slug);
+		        if (!empty($dismissed)) {
+		            return '';
+		        }
+		    }
+		    
+		    if (empty($message)) {
+		        return '';
+		    }
+		    
+		    $type = in_array($type, ['success', 'error', 'warning', 'info']) ? $type : 'success';
+		    $slug = $slug ? sanitize_key($slug) : '';
+		    
+		    ob_start();
+		    ?>
+		    <div class="notice notice-<?php echo esc_attr($type); ?> <?php echo $dismissible ? 'is-dismissible' : ''; ?> notice-one-click-ssl" <?php echo $slug ? 'data-notice="' . esc_attr($slug) . '"' : ''; ?>>
+		        <p>
+		            <?php
+		            switch ($type) {
+		                case 'error':
+		                    echo '<i class="fa fa-times fa-fw"></i> ';
+		                    break;
+		                case 'warning':
+		                    echo '<i class="fa fa-exclamation-triangle fa-fw"></i> ';
+		                    break;
+		                case 'success':
+		                case 'info':
+		                    echo '<i class="fa fa-check fa-fw"></i> ';
+		                    break;
+		            }
+		            echo wp_kses_post($message); // Allow HTML in messages (e.g., links)
+		            ?>
+		        </p>
+		    </div>
+		    <?php
+		    return ob_get_clean();
 		}
 		
-		function make_request($url = null) {
-			global $ocssl_http_code;
-			
-			if (empty($url)) {
-				$url = home_url(false, 'https');	
-			}
-			
-			$timeout = 5;
-			$body = false;
+		// Replace the make_request method
+        function make_request($url = null, $username = null, $password = null, $force_credentials = false, $expect_json = true) {
+		    global $ocssl_http_code;
 
-				$args = array(
-					'timeout'     	=> 	$timeout,
-					'httpversion' 	=> 	'1.1',
-					'sslverify'   	=> 	true,
-					'body'			=>	array('ocssl_check' => true),
-				);
-				
-				$response = wp_remote_post($url, $args);
-				
-				if (!is_wp_error($response)) {
-					$ocssl_http_code = $response['response']['code'];
-					if (!empty($response['response']['code']) && $response['response']['code'] == 200) {
-						$body = $response['body'];
-					}
-				}
-			
-			$response = array(
-				'code'			=>	$ocssl_http_code,
-				'body'			=>	$body,
-			);
-			
-			return $response;
+		    // Use the query string endpoint for SSL checks
+		    if (empty($url)) {
+		        $url = is_multisite() && is_network_admin() 
+		            ? add_query_arg('ocssl_check', '1', network_home_url('/', 'https')) 
+		            : add_query_arg('ocssl_check', '1', home_url('/', 'https'));
+		    }
+
+		    $timeout = 10;
+		    $body = false;
+
+		    $args = array(
+		        'timeout'      => $timeout,
+		        'httpversion'  => '1.1',
+		        'sslverify'    => true,
+		        'method'       => 'GET',
+		        'headers'      => array(
+		            'User-Agent' => 'WordPress/' . get_bloginfo('version') . '; ' . get_bloginfo('url'),
+		            'Accept'     => $expect_json ? 'application/json' : 'text/html, */*',
+		        ),
+		    );
+
+		    // Use stored credentials only if explicitly requested or if no credentials provided and Basic Auth is required
+		    $use_stored_credentials = false;
+		    if (empty($username) && empty($password) && !$force_credentials) {
+		        $stored_username = get_option('ocssl_auth_username');
+		        $stored_password = get_option('ocssl_auth_password');
+		        $basic_auth_required = get_option('ocssl_basic_auth_required', false);
+		        if ($basic_auth_required && !empty($stored_username) && !empty($stored_password)) {
+		            $username = $stored_username;
+		            $password = $stored_password;
+		            $use_stored_credentials = true;
+		        }
+		    }
+
+		    // Add Basic Authentication if credentials are provided or stored
+		    if (!empty($username) && !empty($password)) {
+		        $args['headers']['Authorization'] = 'Basic ' . base64_encode($username . ':' . $password);
+		    }
+
+		    // Log request details
+		    if (WP_DEBUG) {
+		        error_log('OCSSL make_request args: ' . print_r([
+		            'url' => $url,
+		            'username' => $username ?: 'none',
+		            'use_stored_credentials' => $use_stored_credentials,
+		            'expect_json' => $expect_json,
+		            'headers' => isset($args['headers']) ? $args['headers'] : [],
+		        ], true));
+		    }
+
+		    $response = wp_remote_get($url, $args);
+		    if (WP_DEBUG) {
+		        error_log('OCSSL make_request raw response: ' . json_encode($response));
+		    }
+
+		    $needs_auth = false;
+		    $error_message = null;
+
+		    if (is_wp_error($response)) {
+		        $ocssl_http_code = 0;
+		        $error_message = $response->get_error_message();
+		    } else {
+		        $ocssl_http_code = wp_remote_retrieve_response_code($response);
+		        $headers = wp_remote_retrieve_headers($response);
+		        if ($ocssl_http_code == 401 && isset($headers['www-authenticate']) && stripos($headers['www-authenticate'], 'Basic') !== false) {
+		            $needs_auth = true;
+		            update_option('ocssl_basic_auth_required', true);
+		        } elseif ($ocssl_http_code == 200) {
+		            $body = wp_remote_retrieve_body($response);
+		            if ($expect_json) {
+		                $json = json_decode($body, true);
+		                if (json_last_error() === JSON_ERROR_NONE && isset($json['success']) && $json['success'] === true) {
+		                    $body = $json;
+		                    if (!empty($username) && !empty($password)) {
+		                        // Save credentials only if they worked
+		                        update_option('ocssl_auth_username', sanitize_text_field($username));
+		                        update_option('ocssl_auth_password', $password);
+		                        update_option('ocssl_basic_auth_required', true);
+		                        if (WP_DEBUG) {
+		                            error_log('OCSSL Saved Credentials: username=' . $username);
+		                        }
+		                    }
+		                } else {
+		                    $ocssl_http_code = 0;
+		                    $error_message = 'Invalid JSON response from SSL check endpoint.';
+		                }
+		            } else {
+		                // For non-JSON responses (e.g., scanner), return the raw body
+		                if (!empty($username) && !empty($password)) {
+		                    update_option('ocssl_auth_username', sanitize_text_field($username));
+		                    update_option('ocssl_auth_password', $password);
+		                    update_option('ocssl_basic_auth_required', true);
+		                    if (WP_DEBUG) {
+		                        error_log('OCSSL Saved Credentials: username=' . $username);
+		                    }
+		                }
+		            }
+		        }
+		    }
+
+		    $response_data = array(
+		        'code'         => $ocssl_http_code,
+		        'body'         => $body,
+		        'needs_auth'   => $needs_auth,
+		        'error_message' => $error_message,
+		        'url'          => $url,
+		        'headers'      => isset($headers) ? $headers->getAll() : [],
+		    );
+
+		    // Log response details
+		    if (WP_DEBUG) {
+		        error_log('OCSSL make_request response: ' . print_r($response_data, true));
+		    }
+
+		    return $response_data;
 		}
+
 		
 		function gen_date($format = "Y-m-d H:i:s", $time = false, $gmt = false, $includetime = false) {
 			if (empty($format)) {
@@ -470,19 +699,21 @@ if (!class_exists('OCSSL')) {
 			return $certinfo;
 		}
 		
-		function has_ssl_support() {	
-			global $ocssl_http_code;
-					
-			$has_ssl = false;
-			$url = home_url(false, 'https');
-			
-			if ($response = $this -> make_request($url)) {
-				if (!empty($response['code']) && $response['code'] == 200) {
-					$has_ssl = true;
-				}	
-			}
-	
-			return apply_filters('ocssl_has_ssl', $has_ssl);
+ 		function has_ssl_support() {    
+		    global $ocssl_http_code;
+		            
+		    $has_ssl = false;
+		    $url = is_multisite() && is_network_admin() 
+		        ? add_query_arg('ocssl_check', '1', network_home_url('/', 'https')) 
+		        : add_query_arg('ocssl_check', '1', home_url('/', 'https'));
+		    
+		    if ($response = $this->make_request($url, null, null, false, true)) {
+		        if (!empty($response['code']) && $response['code'] == 200) {
+		            $has_ssl = true;
+		        }
+		    }
+
+		    return apply_filters('ocssl_has_ssl', $has_ssl);
 		}
 		
 		function check_ssl() {			
@@ -591,136 +822,217 @@ if (!class_exists('OCSSL')) {
 		}
 		
 		function ajax_check_ssl_support() {
+            check_ajax_referer('check_ssl_support', 'security');
 
-			check_ajax_referer('check_ssl_support', 'security');
+            if (!current_user_can('manage_options')) {
+                wp_die(__('You do not have permission', 'one-click-ssl'));
+            }
 
-			if (!current_user_can('manage_options')) {
-				wp_die(__('You do not have permission', 'one-click-ssl'));
-			}
-			
-			ob_start();
-			
-			global $ocssl_http_code;
-			
-			if ($this -> has_ssl_support()) {
-				$response = array('success' => true, 'http_code' => $ocssl_http_code);
-			} else {
-				$error = sprintf('<i class="fa fa-times"></i> ' . __('SSL is not supported. Website returned response code %s over SSL. Please ask your hosting provider to check for you.', 'one-click-ssl'), '<strong>' . $ocssl_http_code . '</strong>');
-				$response = array('success' => false, 'http_code' => $ocssl_http_code, 'error' => $error);
-			}
-			
-			$process = ob_get_clean();
-			echo json_encode($response);
-			
-			exit();
-			die();
-		}
+            ob_start();
+
+            global $ocssl_http_code;
+
+            // Get credentials from POST data
+            $username = isset($_POST['auth_username']) ? sanitize_text_field($_POST['auth_username']) : null;
+            $password = isset($_POST['auth_password']) ? $_POST['auth_password'] : null;
+
+            // Log credentials for debugging
+            if (WP_DEBUG) {
+                error_log('OCSSL AJAX Credentials: username=' . ($username ?: 'none') . ', password=' . ($password ? '[provided]' : 'none'));
+            }
+
+            // Make the request to the custom endpoint
+            $response = $this->make_request(null, $username, $password, true);
+
+            $ocssl_http_code = $response['code'];
+
+            if ($response['code'] == 200 && is_array($response['body']) && isset($response['body']['success']) && $response['body']['success'] === true) {
+                $reply = array(
+                    'success'    => true,
+                    'http_code'  => $ocssl_http_code,
+                    'message'    => __('SSL check successful.', 'one-click-ssl'),
+                );
+            } else {
+                if ($response['needs_auth'] && empty($username) && empty($password)) {
+                    $error = '<i class="fa fa-lock"></i> ' . __('Basic Authentication detected and SSL cannot be enabled. To bypass, enter your htpasswd username and password below. This is a secure form.', 'one-click-ssl');
+                    $reply = array(
+                        'success'    => false,
+                        'needs_auth' => true,
+                        'http_code'  => $ocssl_http_code,
+                        'error'      => $error,
+                    );
+                } else {
+                    $error = sprintf(
+                        '<i class="fa fa-times"></i> ' . __('SSL check failed with response code %s.', 'one-click-ssl'),
+                        '<strong>' . $ocssl_http_code . '</strong>'
+                    );
+                    if (!empty($username) && !empty($password)) {
+                        $error = '<i class="fa fa-times"></i> ' . __('Incorrect username or password for Basic Authentication. Please try again or check your .htpasswd settings.', 'one-click-ssl');
+                    }
+                    if ($response['error_message']) {
+                        $error .= ' ' . __('Error details:', 'one-click-ssl') . ' ' . esc_html($response['error_message']);
+                    }
+                    $reply = array(
+                        'success'    => false,
+                        'needs_auth' => false,
+                        'http_code'  => $ocssl_http_code,
+                        'error'      => $error,
+                    );
+                }
+            }
+
+            if (WP_DEBUG) {
+                error_log('OCSSL ajax_check_ssl_support reply: ' . print_r($reply, true));
+            }
+
+            $process = ob_get_clean();
+            wp_send_json($reply);
+        }
 		
 		function ajax_enable_ssl() {
-			check_ajax_referer('enable_ssl', 'security');
+            check_ajax_referer('enable_ssl', 'security');
 
-			if (!current_user_can('manage_options')) {
-				wp_die(__('You do not have permission', 'one-click-ssl'));
-			}
-			
-			if (is_multisite()) {
-				update_site_option('ocssl_global', 1);	
-			} else {
-				update_option('ocssl', 1);
-			}
-				
-			wp_cache_flush();
-			
-			exit();
-			die();
-		}
+            if (!current_user_can('manage_options')) {
+                wp_die(__('You do not have permission', 'one-click-ssl'));
+            }
+
+            // Get credentials from POST data
+            $username = isset($_POST['auth_username']) ? sanitize_text_field($_POST['auth_username']) : null;
+            $password = isset($_POST['auth_password']) ? $_POST['auth_password'] : null;
+
+            // Verify SSL support with provided or stored credentials
+            $response = $this->make_request(null, $username, $password);
+            if ($response['code'] != 200 || !isset($response['body']['success']) || $response['body']['success'] !== true) {
+                wp_send_json_error([
+                    'message' => __('Failed to verify SSL support. Please check your credentials or server configuration.', 'one-click-ssl'),
+                    'http_code' => $response['code'],
+                    'needs_auth' => $response['needs_auth'],
+                ]);
+            }
+
+            // Enable SSL
+            if (is_multisite()) {
+                update_site_option('ocssl_global', 1);
+                update_site_option('ocssl_areas', 'all');
+            } else {
+                update_option('ocssl', 1);
+                update_option('ocssl_areas', 'all');
+            }
+                
+            wp_cache_flush();
+            
+            wp_send_json_success([
+                'message' => __('SSL enabled successfully.', 'one-click-ssl'),
+                'redirect' => is_multisite() ? network_admin_url('admin.php?page=one-click-ssl') : admin_url('admin.php?page=one-click-ssl'),
+            ]);
+        }
 		
 		function ajax_scan() {
-			check_ajax_referer('scan', 'security');
+		    check_ajax_referer('scan', 'security');
 
-			if (!current_user_can('manage_options')) {
-				wp_die(__('You do not have permission', 'one-click-ssl'));
-			}
-			
-			ob_start();
-			
-			$success = false;
-			$insecure = false;
-			
-			$url = home_url('/', 'https');
-			if (!empty($_POST['scanurl'])) {
-				$scanurl = sanitize_url($_POST['scanurl']);
-				$url .= ltrim($scanurl, '/');
-			}
-			
-			$output = '';
-			
-			if ($response = $this -> make_request($url)) {				
-				if (!empty($response) && $response['code'] == 200) {					
-					$pattern = '/<[script|link|base|img|form][^>]*[href|src|action]=[\'"]\K(http:\/\/[^\'"]+)[\'"]/i';
-					preg_match_all($pattern, $response['body'], $matches);
-					
-					if (!empty($matches[1])) {
-						$success = false;
-						$insecure = $matches[1];
-						
-						$output .= '<div class="alert alert-warning">';
-						$output .= '<i class="fa fa-exclamation-triangle fa-fw"></i> ' . sprintf(__('%s Insecure resources found on the URL, make them https:// for SSL to validate', 'one-click-ssl'), count($matches[1]));
-						
-						$output .= '<ul>';
-						foreach ($matches[1] as $insecure_url) {
-							$output .= '<li>' . $insecure_url . '</li>';
-						}
-						$output .= '</ul>';
-						
-						$output .= '</div>';
-					} else {
-						$success = true;
-						$insecure = false;
-						
-						$output .= '<div class="alert alert-success">';
-						$output .= '<i class="fa fa-check fa-fw"></i> ' . __('No insecure resources found, SSL will validate!', 'one-click-ssl');
-						$output .= '</div>';
-					}
-				} else {
-					$success = false;
-					$insecure = false;
-					$output .= '<div class="alert alert-danger"><i class="fa fa-times fa-fw"></i> ' . sprintf(__('URL could not be loaded - Code %s', 'one-click-ssl'), $response['code']) . '</div>';
-				}
-			} else {
-				$success = false;
-				$insecure = false;
-				$output .= '<div class="alert alert-danger"><i class="fa fa-times fa-fw"></i> ' . __('Request failed, please try again.', 'one-click-ssl') . '</div>';
-			}
-			
-			$reply = array(
-				'success'			=>	$success,
-				'insecure'			=>	$insecure,
-				'output'			=>	$output
-			);
-			
-			$process = ob_get_clean();
-			echo json_encode($reply);
-			
-			exit();
-			die();
-		}
-		
-		function ajax_dismissed_notice() {
-			check_ajax_referer('dismissed_notice', 'security');
-
-			if (!current_user_can('manage_options')) {
-				wp_die(__('You do not have permission', 'one-click-ssl'));
-			}
-			
-			// Pick up the notice "slug" - passed via jQuery (the "data-notice" attribute on the notice)
-		    $slug = sanitize_text_field($_REQUEST['slug']);
-		    // Store it in the options table
-		    update_option('ocssl_dismissed-' . $slug, true);
+		    if (!current_user_can('manage_options')) {
+		        wp_die(__('You do not have permission', 'one-click-ssl'));
+		    }
+		    
+		    ob_start();
+		    
+		    $success = false;
+		    $insecure = false;
+		    
+		    $url = home_url('/', 'https');
+		    if (!empty($_POST['scanurl'])) {
+		        $scanurl = sanitize_text_field($_POST['scanurl']);
+		        // Ensure scanurl is a valid path, not a full URL
+		        if (!preg_match('/^https?:\/\//i', $scanurl)) {
+		            $url .= ltrim($scanurl, '/');
+		        } else {
+		            // If a full URL is provided, use it directly after sanitization
+		            $url = esc_url_raw($scanurl, ['https']);
+		        }
+		    }
+		    
+		    $output = '';
+		    
+		    if ($response = $this->make_request($url, null, null, false, false)) {                
+		        if (!empty($response) && $response['code'] == 200) {                    
+		            $pattern = '/<(script|link|base|img|form)\s[^>]*\s(href|src|action)=([\'"]?)(http:\/\/[^>\s\'"]+)(\3)/i';
+		            preg_match_all($pattern, $response['body'], $matches);
+		            
+		            if (!empty($matches[4])) {
+		                // Filter out SVG namespace and invalid URLs, then deduplicate
+		                $insecure = array_filter(array_unique($matches[4]), function($url) {
+		                    return strpos($url, 'w3.org/2000/svg') === false && preg_match('/http:\/\/[^\/]+\.[^\/]+/', $url);
+		                });
+		                
+		                if (!empty($insecure)) {
+		                    $success = false;
+		                    
+		                    $output .= '<div class="alert alert-warning">';
+		                    $output .= '<i class="fa fa-exclamation-triangle fa-fw"></i> ' . sprintf(__('%s Insecure resources found on the URL, make them https:// for SSL to validate', 'one-click-ssl'), count($insecure));
+		                    
+		                    $output .= '<ul>';
+		                    foreach ($insecure as $insecure_url) {
+		                        $output .= '<li>' . esc_url($insecure_url) . '</li>';
+		                    }
+		                    $output .= '</ul>';
+		                    
+		                    $output .= '</div>';
+		                } else {
+		                    $success = true;
+		                    $insecure = false;
+		                    
+		                    $output .= '<div class="alert alert-success">';
+		                    $output .= '<i class="fa fa-check fa-fw"></i> ' . __('No insecure resources found, SSL will validate!', 'one-click-ssl');
+		                    $output .= '</div>';
+		                }
+		            } else {
+		                $success = true;
+		                $insecure = false;
+		                
+		                $output .= '<div class="alert alert-success">';
+		                $output .= '<i class="fa fa-check fa-fw"></i> ' . __('No insecure resources found, SSL will validate!', 'one-click-ssl');
+		                $output .= '</div>';
+		            }
+		        } else {
+		            $success = false;
+		            $insecure = false;
+		            $error_message = $response['error_message'] ?: sprintf(__('URL could not be loaded - Code %s', 'one-click-ssl'), $response['code']);
+		            if ($response['needs_auth']) {
+		                $error_message = __('Basic Authentication required. Please provide credentials in the SSL check.', 'one-click-ssl');
+		            }
+		            $output .= '<div class="alert alert-danger"><i class="fa fa-times fa-fw"></i> ' . esc_html($error_message) . '</div>';
+		        }
+		    } else {
+		        $success = false;
+		        $insecure = false;
+		        $output .= '<div class="alert alert-danger"><i class="fa fa-times fa-fw"></i> ' . __('Request failed, please try again.', 'one-click-ssl') . '</div>';
+		    }
+		    
+		    $reply = array(
+		        'success' => $success,
+		        'insecure' => $insecure,
+		        'output' => $output
+		    );
+		    
+		    $process = ob_get_clean();
+		    echo json_encode($reply);
 		    
 		    exit();
 		    die();
 		}
+		
+		public function dismiss_smart_rating() {
+		    check_ajax_referer('ocssl_dismiss_notice', 'nonce');
+		    
+		    if (!current_user_can('manage_options')) {
+		        wp_send_json_error('Permission denied');
+		    }
+		    
+		    update_option('one_click_ssl_smart_rating_dismissed', true);
+		    update_option('ocssl_dismissed-ratereview', 1); // Align with other notices
+		    wp_send_json_success();
+		}
+
 		
 		function is_plugin_active($name = null, $orinactive = false) {
 			if (!empty($name)) {
@@ -801,7 +1113,7 @@ if (!class_exists('OCSSL')) {
 			
 			$patterns = array(
 				'/url\([\'"]?\K(http:\/\/)(?=[^)]+)/i',
-				'/<link .*?href=[\'"]\K(http:\/\/)(?=[^\'"]+)/i',
+				'/<link\s+(?:(?!>).)*?href\s*=\s*([\'"])\Khttp:\/\/(?=[^\'"]+)/i',
 				'/<meta property="og:image" .*?content=[\'"]\K(http:\/\/)(?=[^\'"]+)/i',
 				'/<form [^>]*?action=[\'"]\K(http:\/\/)(?=[^\'"]+)/i',
 				'/<(script|svg|link|base|img|form)[^>]*(xmlns|href|src|action)=[\'"]\K(http:\/\/)(?=[^\'"]+)/i',
@@ -823,50 +1135,88 @@ if (!class_exists('OCSSL')) {
 		}
 
 
-        function save_check_settings() {
-            // Only run in the admin area
+        
+	    public function save_check_settings() {
             if (!is_admin() || empty($_POST)) {
                 return;
             }
 
-            // Verify the nonce for security
             if (!check_admin_referer('ocssl-settings', 'security')) {
                 wp_die(__('Security check failed', 'one-click-ssl'));
             }
 
-            update_option('ocssl', 0);
-            update_option('ocssl_nonsslredirect', 0);
-            update_option('ocssl_toolsmenu', 0);
+            // Determine correct update function for single vs network
+            $save_fn = ( is_multisite() && is_network_admin() )
+                ? 'update_site_option'
+                : 'update_option';
 
+            // Reset defaults
+            $save_fn('ocssl', 0);
+            $save_fn('ocssl_global', 0);
+            $save_fn('ocssl_nonsslredirect', 0);
+            $save_fn('ocssl_toolsmenu', 0);
+
+            // Save each submitted field
             foreach ($_POST as $pkey => $pval) {
-                update_option(sanitize_key($pkey), sanitize_text_field($pval));
+                call_user_func(
+                    $save_fn,
+                    sanitize_key($pkey),
+                    sanitize_text_field($pval)
+                );
             }
 
-            $ocssl_toolsmenu = !empty($_POST['ocssl_toolsmenu']) ? $_POST['ocssl_toolsmenu'] : 0;
-
-            if (!empty($ocssl_toolsmenu)) {
-                update_option('ocssl_toolsmenu', 1);
-                if (!wp_doing_ajax()) {
-                    wp_redirect(admin_url('tools.php?page=one-click-ssl'));
-                    exit();
-                }
-            }
-
-            if (empty($ocssl_toolsmenu)) {
-                update_option('ocssl_toolsmenu', 0);
-                if (!wp_doing_ajax()) {
-                    wp_redirect(admin_url('admin.php?page=one-click-ssl'));
-                    exit();
-                }
+            // Determine redirect URL
+            $ocssl_toolsmenu = !empty($_POST['ocssl_toolsmenu']) ? 1 : 0;
+            if ($ocssl_toolsmenu) {
+                call_user_func($save_fn, 'ocssl_toolsmenu', 1);
+                $url = is_multisite()
+                    ? network_admin_url('settings.php?page=one-click-ssl')
+                    : admin_url('tools.php?page=one-click-ssl');
+            } else {
+                call_user_func($save_fn, 'ocssl_toolsmenu', 0);
+                $url = is_multisite()
+                    ? network_admin_url('admin.php?page=one-click-ssl')
+                    : admin_url('admin.php?page=one-click-ssl');
             }
 
             wp_cache_flush();
             $this->check_ssl();
-            $this->render_message(__('Settings have been saved', 'one-click-ssl'));
+            
+            // Queue settings saved notice
+            set_transient('ocssl_settings_notice', [
+                'message'     => __('Settings have been saved', 'one-click-ssl'),
+                'type'        => 'success',
+                'dismissible' => true,
+                'slug'        => 'settings-saved'
+            ], 30);
+            
             do_action('ocssl_settings_saved', $_POST);
 
-            include($this->plugin_path . 'views' . DS . 'settings.php');
+            // Redirect to prevent resubmission
+            if (!wp_doing_ajax()) {
+                wp_redirect($url);
+                exit;
+            }
         }
+
+		public function dismiss_notice() {
+		    check_ajax_referer('ocssl_dismiss_notice', 'nonce');
+		    
+		    if (!current_user_can('manage_options')) {
+		        wp_send_json_error('Permission denied');
+		    }
+		    
+		    $slug = !empty($_POST['slug']) ? sanitize_key($_POST['slug']) : '';
+		    if ($slug) {
+		        update_option('ocssl_dismissed-' . $slug, 1);
+		        if ($slug === 'ratereview') {
+		            update_option('one_click_ssl_smart_rating_dismissed', true);
+		        }
+		        wp_send_json_success();
+		    }
+		    
+		    wp_send_json_error('Invalid slug');
+		}
     }
 
 
@@ -895,10 +1245,20 @@ if (!class_exists('OCSSL')) {
 	} else {
 		add_action('admin_menu', array($ocssl, 'admin_menu'), 10, 1);
 	}
+
+	add_action('admin_head',  [$ocssl, 'remove_dashboard']);
 		
 	add_action('admin_enqueue_scripts', array($ocssl, 'admin_enqueue_scripts'), 10, 1);
 	add_action('admin_notices', array($ocssl, 'admin_notices'), 10, 1);
+
+	if ( is_multisite() ) {
+	    add_action( 'network_admin_notices', array( $ocssl, 'admin_notices' ) );
+	} 
     add_action( 'wp_ajax_one_click_ssl_dismiss_smart_rating', array( $ocssl, 'dismiss_smart_rating' ) );
+
+    add_action('wp_ajax_ocssl_dismiss_notice', array($ocssl, 'dismiss_notice'));
+
+
 
 	if (is_multisite()) {
 		add_action('wp_loaded', array($ocssl, 'check_network_ssl'), 10, 1);	

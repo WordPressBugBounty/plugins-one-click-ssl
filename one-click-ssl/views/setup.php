@@ -26,8 +26,13 @@ require_once(ABSPATH . 'wp-admin' . DS . 'admin.php');
 		<?php printf(__('Version %s', 'one-click-ssl'), $this -> plugin_version); ?>
 	</div>
 
-	<?php $ocssl = get_option('ocssl'); ?>
-	<?php if (is_ssl() && !empty($ocssl)) : ?>
+	<?php 
+
+	$ocssl = get_option('ocssl');
+	$ocssl_mu = get_site_option('ocssl_global');
+
+	?>
+	<?php if ((!is_multisite() && is_ssl() && !empty($ocssl)) || (is_multisite() && is_ssl() && !empty($ocssl_mu) )): ?>
 		<div class="feature-section one-col has-1-columns">
 			<div class="col column">
 				<h2><i class="fa fa-check"></i> <?php _e('SSL Already Enabled', 'one-click-ssl'); ?></h2>
