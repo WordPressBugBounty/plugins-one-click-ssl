@@ -4,7 +4,7 @@
 Plugin Name: One Click SSL
 Plugin URI: https://tribulant.com/plugins/view/18/
 Description: SSL/TLS redirect and automatic https:// resource conversion for your WordPress website.
-Version: 1.7.3
+Version: 1.7.4
 Author: Tribulant Software
 Author URI: https://tribulant.com
 Text Domain: one-click-ssl
@@ -421,10 +421,11 @@ function register_ssl_check_endpoint() {
 				'settings_url'				=>	((is_multisite()) ? network_admin_url('admin.php?page=one-click-ssl') : admin_url('admin.php?page=one-click-ssl')),
 				'settingswarning' 			=> 	__('By turning on SSL, your server/hosting must support SSL (https://) or this could make your website inaccessible.' . "\r\n\r\n" . 'Upon clicking OK, you will be asked to log in to your WordPress dashboard again if the protocol changes.' . "\r\n\r\n" . 'If you are uncertain, click Cancel below.', 'one-click-ssl'),
 				'ajaxnonce'					=>	array(
-					'check_ssl_support'			=>	wp_create_nonce('check_ssl_support'),
-					'enable_ssl'				=>	wp_create_nonce('enable_ssl'),
-					'scan'						=>	wp_create_nonce('scan'),
-					'dismissed_notice'			=>	wp_create_nonce('dismissed_notice'),
+					'check_ssl_support'	=>	wp_create_nonce('check_ssl_support'),
+					'enable_ssl'        =>	wp_create_nonce('enable_ssl'),
+					'scan'              =>	wp_create_nonce('scan'),
+					'dismissed_notice'  =>	wp_create_nonce('dismissed_notice'),
+					'dismiss'           =>	wp_create_nonce('ocssl_dismiss_notice'),
 				),
 				// Add translations for auth form
 				'username_label' => __('Username:', 'one-click-ssl'),

@@ -4,7 +4,7 @@ Donate link: https://tribulant.com
 Tags: ssl, https, redirect, mixed-content, resources, http, secure, certificate, insecure content
 Requires at least: 4.6
 Tested up to: 6.8.1
-Stable tag: 1.7.3
+Stable tag: 1.7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,7 +64,7 @@ You need to have SSL/TLS support on your hosting/server. This is done by install
 
 = Is SSL mandatory? =
 
-While it's not mandatory, it is highly recommended for the security and peace of mind of your users. All Internet browsers are warning users about insecure websites, and search engines rank you lower if you do not activate SSL. It is practically a must now.
+While SSL is not mandatory, it is highly recommended for the security and peace of mind of your users. And, all Internet browsers are warning users about insecure websites, and search engines rank you lower if you do not activate SSL. It is practically a must now.
 
 
 == Screenshots ==
@@ -78,6 +78,9 @@ While it's not mandatory, it is highly recommended for the security and peace of
 == Changelog ==
 
 See all <a href="https://tribulant.com/docs/one-click-ssl-plugin/11098/#doc6">releases and full changelogs</a> in our docs.
+
+= 1.7.4 =
+* FIX: Added proper nonce verification for rating notice dismissal.
 
 = 1.7.3 =
 * ADD: Automatic Basic Authentication detection, allowing you to bypass htpasswd basic auth to check for SSL support.
