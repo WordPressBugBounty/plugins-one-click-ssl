@@ -4,7 +4,7 @@
 Plugin Name: One Click SSL
 Plugin URI: https://tribulant.com/plugins/view/18/
 Description: SSL/TLS redirect and automatic https:// resource conversion for your WordPress website.
-Version: 1.7.4
+Version: 1.7.5
 Author: Tribulant Software
 Author URI: https://tribulant.com
 Text Domain: one-click-ssl
