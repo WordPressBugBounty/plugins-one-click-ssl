@@ -3,8 +3,8 @@ Contributors: contrid
 Donate link: https://tribulant.com
 Tags: ssl, https, redirect, mixed-content, resources, http, secure, certificate, insecure content
 Requires at least: 4.6
-Tested up to: 6.8.3
-Stable tag: 1.7.5
+Tested up to: 6.9.1
+Stable tag: 1.7.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -78,6 +78,13 @@ While SSL is not mandatory, it is highly recommended for the security and peace 
 == Changelog ==
 
 See all <a href="https://tribulant.com/docs/one-click-ssl-plugin/11098/#doc6">releases and full changelogs</a> in our docs.
+
+= 1.7.7 =
+* FIX: Critical error when debug mode is active and SSL is not available.
+
+= 1.7.6 =
+* ADD: "Turn on debuging" toggle in plugin settings page.
+* FIX: Prevent fatal error by ensuring $ocssl instance is initialized before load_plugin_data() is called.
 
 = 1.7.5 =
 * IMPROVE: Updated "Tested up to" tag for compatibility with WordPress v6.8.3.

@@ -1,134 +1,250 @@
 /* One Click SSL Stylesheet */
 
 #adminmenu .toplevel_page_one-click-ssl div.wp-menu-image:before {
-    font-family: 'FontAwesome';
-    content: "\f023";
+  font-family: 'FontAwesome';
+  content: "\f023";
 }
 
 .one-click-ssl-success {
-	color: green;
+color: green;
 }
 
 .one-click-ssl-warning {
-	color: orange;
+color: orange;
 }
 
 .one-click-ssl-error {
-	color: red;
+color: red;
 }
 
 #ocssl-step1-success, 
 #ocssl-step2-success {
-	display: none;
+display: none;
 }
 
 #ocssl-step1-failure, 
 #ocssl-step2-failure {
-	display: none;
+display: none;
 }
 
 .alert {
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid transparent;
-  border-radius: 4px;
+padding: 15px;
+margin-bottom: 20px;
+border: 1px solid transparent;
+border-radius: 4px;
 }
 .alert h4 {
-  margin-top: 0;
-  color: inherit;
+margin-top: 0;
+color: inherit;
 }
 .alert .alert-link {
-  font-weight: bold;
+font-weight: bold;
 }
 .alert > p,
 .alert > ul {
-  margin-bottom: 0;
+margin-bottom: 0;
 }
 .alert > p + p {
-  margin-top: 5px;
+margin-top: 5px;
 }
 .alert-dismissible {
-  padding-right: 35px;
+padding-right: 35px;
 }
 .alert-dismissible .close {
-  position: relative;
-  top: -2px;
-  right: -21px;
-  color: inherit;
+position: relative;
+top: -2px;
+right: -21px;
+color: inherit;
 }
 .alert-success {
-  background-color: #dff0d8;
-  border-color: #d6e9c6;
-  color: #3c763d;
+background-color: #dff0d8;
+border-color: #d6e9c6;
+color: #3c763d;
 }
 .alert-success hr {
-  border-top-color: #c9e2b3;
+border-top-color: #c9e2b3;
 }
 .alert-success .alert-link {
-  color: #2b542c;
+color: #2b542c;
 }
 .alert-info {
-  background-color: #d9edf7;
-  border-color: #bce8f1;
-  color: #31708f;
+background-color: #d9edf7;
+border-color: #bce8f1;
+color: #31708f;
 }
 .alert-info hr {
-  border-top-color: #a6e1ec;
+border-top-color: #a6e1ec;
 }
 .alert-info .alert-link {
-  color: #245269;
+color: #245269;
 }
 .alert-warning {
-  background-color: #fcf8e3;
-  border-color: #faebcc;
-  color: #8a6d3b;
+background-color: #fcf8e3;
+border-color: #faebcc;
+color: #8a6d3b;
 }
 .alert-warning hr {
-  border-top-color: #f7e1b5;
+border-top-color: #f7e1b5;
 }
 .alert-warning .alert-link {
-  color: #66512c;
+color: #66512c;
 }
 .alert-danger {
-  background-color: #f2dede;
-  border-color: #ebccd1;
-  color: #a94442;
+background-color: #f2dede;
+border-color: #ebccd1;
+color: #a94442;
 }
 .alert-danger hr {
-  border-top-color: #e4b9c0;
+border-top-color: #e4b9c0;
 }
 .alert-danger .alert-link {
-  color: #843534;
+color: #843534;
 }
 
 /* Setup Page */
 
 .one-click-ssl-badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: #0074a2;
-    background-position: center 24px;
-    -webkit-background-size: 85px 85px;
-    background-size: 85px 85px;
-    color: #78c8e6;
-    font-size: 14px;
-    text-align: center;
-    font-weight: 600;
-    margin: 5px 0 0;
-    padding: 15px 0;
-    display: inline-block;
-	width: 150px;
-    text-rendering: optimizeLegibility;
-    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #0074a2;
+  background-position: center 24px;
+  -webkit-background-size: 85px 85px;
+  background-size: 85px 85px;
+  color: #78c8e6;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 600;
+  margin: 5px 0 0;
+  padding: 15px 0;
+  display: inline-block;
+width: 150px;
+  text-rendering: optimizeLegibility;
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
 }
 
 .one-click-ssl-badge i.fa {
-	color: white !important;
-	font-size: 72px !important;
+color: white !important;
+font-size: 72px !important;
 }
 
 .about-wrap.one-click-ssl-setup .two-col .col {
-	align-self: flex-start;
+      align-self: flex-start;
+}
+
+.ocssl-debug-toggle {
+  margin-top: 12px;
+}
+
+.ocssl-debug-toggle__control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ocssl-debug-toggle__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ocssl-debug-toggle__label input[type="checkbox"] {
+  margin: 0;
+}
+
+.ocssl-debug-toggle__label-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 16px;
+  margin-top: -2px;
+}
+
+.ocssl-debug-toggle__label-text .fa {
+  color: #82878c;
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.ocssl-debug-toggle__help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: black;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: help;
+  text-decoration: none;
+  outline: none;
+}
+
+.ocssl-debug-toggle__help:focus {
+  box-shadow: 0 0 0 2px #2271b1;
+}
+
+.ocssl-debug-toggle__help-icon {
+  line-height: 1;
+}
+
+.ocssl-debug-toggle__tooltip {
+  position: absolute;
+  left: 0%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-66%);
+  max-width: min(260px, calc(100vw - 48px));
+  width: max-content;
+  padding: 8px 10px;
+  background: #23282d;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 1000;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.ocssl-debug-toggle__tooltip code {
+  color: #ace4ff;
+  font-size: 12px;
+}
+
+.ocssl-debug-toggle__help::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #23282d transparent transparent transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.ocssl-debug-toggle__help:hover .ocssl-debug-toggle__tooltip,
+.ocssl-debug-toggle__help:focus .ocssl-debug-toggle__tooltip,
+.ocssl-debug-toggle__help:focus-within .ocssl-debug-toggle__tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.ocssl-debug-toggle__help:hover::after,
+.ocssl-debug-toggle__help:focus::after,
+.ocssl-debug-toggle__help:focus-within::after {
+  opacity: 1;
 }

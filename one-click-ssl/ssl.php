@@ -4,7 +4,7 @@
 Plugin Name: One Click SSL
 Plugin URI: https://tribulant.com/plugins/view/18/
 Description: SSL/TLS redirect and automatic https:// resource conversion for your WordPress website.
-Version: 1.7.5
+Version: 1.7.7
 Author: Tribulant Software
 Author URI: https://tribulant.com
 Text Domain: one-click-ssl
@@ -289,9 +289,10 @@ function register_ssl_check_endpoint() {
 
 				check_admin_referer('ocssl-settings', 'security');
 
-				update_option('ocssl', 0);
-				update_option('ocssl_nonsslredirect', 0);
-				update_option('ocssl_toolsmenu', 0);
+                                update_option('ocssl', 0);
+                                update_option('ocssl_nonsslredirect', 0);
+                                update_option('ocssl_toolsmenu', 0);
+                                update_option('ocssl_debug', 0);
 				
 				foreach ($_POST as $pkey => $pval) {
 					update_option(sanitize_key($pkey), sanitize_text_field($pval));
@@ -310,34 +311,38 @@ function register_ssl_check_endpoint() {
 		
 		public function admin_network() {
 		    // Log request details
-		    error_log('OCSSL admin_network: REQUEST_METHOD=' . $_SERVER['REQUEST_METHOD']);
-		    error_log('OCSSL admin_network: REQUEST_URI=' . $_SERVER['REQUEST_URI']);
-		    error_log('OCSSL admin_network: POST=' . print_r($_POST, true));
+                    $this->log_debug('OCSSL admin_network: REQUEST_METHOD=' . $_SERVER['REQUEST_METHOD']);
+                    $this->log_debug('OCSSL admin_network: REQUEST_URI=' . $_SERVER['REQUEST_URI']);
+                    $this->log_debug('OCSSL admin_network: POST=' . print_r($_POST, true));
 
 		    // Check if this is a form submission (POST request)
 		    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		        // Verify nonce
-		        if (!check_admin_referer('ocssl-settings', 'security')) {
-		            error_log('OCSSL admin_network: Nonce verification failed');
-		            wp_die(__('Security check failed', 'one-click-ssl'));
-		        }
+                        if (!check_admin_referer('ocssl-settings', 'security')) {
+                            $this->log_debug('OCSSL admin_network: Nonce verification failed');
+                            wp_die(__('Security check failed', 'one-click-ssl'));
+                        }
 
-		        // Log form submission
-		        if (isset($_POST['ocssl_form_submitted'])) {
-		            error_log('OCSSL admin_network: Form submitted with ocssl_form_submitted');
-		        }
+                        // Log form submission
+                        if (isset($_POST['ocssl_form_submitted'])) {
+                            $this->log_debug('OCSSL admin_network: Form submitted with ocssl_form_submitted');
+                        }
 
-		        // Get current ocssl_global value
-		        $current_ocssl_global = get_site_option('ocssl_global');
-		        error_log('OCSSL admin_network: Current ocssl_global=' . $current_ocssl_global);
+                        // Get current ocssl_global value
+                        $current_ocssl_global = get_site_option('ocssl_global');
+                        $this->log_debug('OCSSL admin_network: Current ocssl_global=' . $current_ocssl_global);
 
-		        // Set ocssl_global based on POST data
-		        $new_ocssl_global = isset($_POST['ocssl_global']) ? 1 : 0;
-		        update_site_option('ocssl_global', $new_ocssl_global);
-		        error_log('OCSSL admin_network: Saving ocssl_global=' . $new_ocssl_global);
+                        // Set ocssl_global based on POST data
+                        $new_ocssl_global = isset($_POST['ocssl_global']) ? 1 : 0;
+                        update_site_option('ocssl_global', $new_ocssl_global);
+                        $this->log_debug('OCSSL admin_network: Saving ocssl_global=' . $new_ocssl_global);
 
-		        // Handle other fields
-		        $post_fields = ['ocssl_areas', 'ocssl_toolsmenu', 'ocssl_auth_username', 'ocssl_auth_password', 'ocssl_nonsslredirect'];
+                        $new_ocssl_debug = isset($_POST['ocssl_debug']) ? 1 : 0;
+                        update_site_option('ocssl_debug', $new_ocssl_debug);
+                        $this->log_debug('OCSSL admin_network: Saving ocssl_debug=' . $new_ocssl_debug);
+
+                        // Handle other fields
+                        $post_fields = ['ocssl_areas', 'ocssl_toolsmenu', 'ocssl_auth_username', 'ocssl_auth_password', 'ocssl_nonsslredirect'];
 		        foreach ($post_fields as $pkey) {
 		            if (isset($_POST[$pkey])) {
 		                if ($pkey === 'ocssl_auth_password') {
@@ -351,13 +356,13 @@ function register_ssl_check_endpoint() {
 		        }
 
 		        // Flush cache
-		        wp_cache_flush();
-		        error_log('OCSSL admin_network: Cache flushed');
+                        wp_cache_flush();
+                        $this->log_debug('OCSSL admin_network: Cache flushed');
 
 		        // Run network SSL check
-		        $this->check_network_ssl();
-		        $updated_ocssl_global = get_site_option('ocssl_global');
-		        error_log('OCSSL admin_network: After check_network_ssl ocssl_global=' . $updated_ocssl_global);
+                        $this->check_network_ssl();
+                        $updated_ocssl_global = get_site_option('ocssl_global');
+                        $this->log_debug('OCSSL admin_network: After check_network_ssl ocssl_global=' . $updated_ocssl_global);
 
 		        // Queue settings saved notice
 		        set_transient('ocssl_settings_notice', [
@@ -447,12 +452,10 @@ function register_ssl_check_endpoint() {
 		}
 		
 		public function admin_notices() {
-		    if (WP_DEBUG) {
-		        error_log('OCSSL admin_notices: Checking notices');
-		    }
+                    $this->log_debug('OCSSL admin_notices: Checking notices');
 
 		    if (!is_ssl()) {
-		        $message = sprintf(__('SSL not enabled, you are on an insecure connection. % мальшеs', 'one-click-ssl'), '<a class="button button-primary" href="' . admin_url('index.php?page=one-click-ssl-setup') . '"><i class="fa fa-shield fa-fw"></i> ' . __('Enable SSL', 'one-click-ssl') . '</a>');
+		        $message = sprintf(__('SSL not enabled, you are on an insecure connection. %s', 'one-click-ssl'), '<a class="button button-primary" href="' . admin_url('index.php?page=one-click-ssl-setup') . '"><i class="fa fa-shield fa-fw"></i> ' . __('Enable SSL', 'one-click-ssl') . '</a>');
 		        echo $this->render_message($message, 'error', true, 'ssloff');
 		    }
 		    
@@ -467,15 +470,11 @@ function register_ssl_check_endpoint() {
 		    }
 		    
 		    $settings_notice = get_transient('ocssl_settings_notice');
-		    if (WP_DEBUG) {
-		        error_log('OCSSL admin_notices: settings_notice=' . print_r($settings_notice, true));
-		    }
+                    $this->log_debug('OCSSL admin_notices: settings_notice=' . print_r($settings_notice, true));
 		    if ($settings_notice && is_array($settings_notice)) {
 		        echo $this->render_message($settings_notice['message'], $settings_notice['type'], $settings_notice['dismissible'], $settings_notice['slug']);
 		        delete_transient('ocssl_settings_notice');
-		        if (WP_DEBUG) {
-		            error_log('OCSSL admin_notices: Rendered settings saved notice');
-		        }
+                        $this->log_debug('OCSSL admin_notices: Rendered settings saved notice');
 		    }
 		}
 		
@@ -580,20 +579,16 @@ function register_ssl_check_endpoint() {
 		    }
 
 		    // Log request details
-		    if (WP_DEBUG) {
-		        error_log('OCSSL make_request args: ' . print_r([
-		            'url' => $url,
-		            'username' => $username ?: 'none',
-		            'use_stored_credentials' => $use_stored_credentials,
-		            'expect_json' => $expect_json,
-		            'headers' => isset($args['headers']) ? $args['headers'] : [],
-		        ], true));
-		    }
+                    $this->log_debug('OCSSL make_request args: ' . print_r([
+                            'url' => $url,
+                            'username' => $username ?: 'none',
+                            'use_stored_credentials' => $use_stored_credentials,
+                            'expect_json' => $expect_json,
+                            'headers' => isset($args['headers']) ? $args['headers'] : [],
+                        ], true));
 
 		    $response = wp_remote_get($url, $args);
-		    if (WP_DEBUG) {
-		        error_log('OCSSL make_request raw response: ' . json_encode($response));
-		    }
+                    $this->log_debug('OCSSL make_request raw response: ' . json_encode($response));
 
 		    $needs_auth = false;
 		    $error_message = null;
@@ -618,9 +613,7 @@ function register_ssl_check_endpoint() {
 		                        update_option('ocssl_auth_username', sanitize_text_field($username));
 		                        update_option('ocssl_auth_password', $password);
 		                        update_option('ocssl_basic_auth_required', true);
-		                        if (WP_DEBUG) {
-		                            error_log('OCSSL Saved Credentials: username=' . $username);
-		                        }
+                                        $this->log_debug('OCSSL Saved Credentials: username=' . $username);
 		                    }
 		                } else {
 		                    $ocssl_http_code = 0;
@@ -632,9 +625,7 @@ function register_ssl_check_endpoint() {
 		                    update_option('ocssl_auth_username', sanitize_text_field($username));
 		                    update_option('ocssl_auth_password', $password);
 		                    update_option('ocssl_basic_auth_required', true);
-		                    if (WP_DEBUG) {
-		                        error_log('OCSSL Saved Credentials: username=' . $username);
-		                    }
+                                    $this->log_debug('OCSSL Saved Credentials: username=' . $username);
 		                }
 		            }
 		        }
@@ -650,9 +641,7 @@ function register_ssl_check_endpoint() {
 		    );
 
 		    // Log response details
-		    if (WP_DEBUG) {
-		        error_log('OCSSL make_request response: ' . print_r($response_data, true));
-		    }
+                    $this->log_debug('OCSSL make_request response: ' . print_r($response_data, true));
 
 		    return $response_data;
 		}
@@ -838,9 +827,7 @@ function register_ssl_check_endpoint() {
             $password = isset($_POST['auth_password']) ? $_POST['auth_password'] : null;
 
             // Log credentials for debugging
-            if (WP_DEBUG) {
-                error_log('OCSSL AJAX Credentials: username=' . ($username ?: 'none') . ', password=' . ($password ? '[provided]' : 'none'));
-            }
+            $this->log_debug('OCSSL AJAX Credentials: username=' . ($username ?: 'none') . ', password=' . ($password ? '[provided]' : 'none'));
 
             // Make the request to the custom endpoint
             $response = $this->make_request(null, $username, $password, true);
@@ -882,9 +869,7 @@ function register_ssl_check_endpoint() {
                 }
             }
 
-            if (WP_DEBUG) {
-                error_log('OCSSL ajax_check_ssl_support reply: ' . print_r($reply, true));
-            }
+            $this->log_debug('OCSSL ajax_check_ssl_support reply: ' . print_r($reply, true));
 
             $process = ob_get_clean();
             wp_send_json($reply);
@@ -1131,9 +1116,33 @@ function register_ssl_check_endpoint() {
 			return apply_filters("ocssl_replace_output", $str);
 		}
 		
-		function debug($var = array()) {
-			echo '<pre>' . print_r($var, true) . '</pre>';
-		}
+                private function is_debug_enabled() {
+                        $enabled = get_option('ocssl_debug', 0);
+
+                        if (is_multisite()) {
+                                $network_value = get_site_option('ocssl_debug', null);
+
+                                if ($network_value !== null && $network_value !== '') {
+                                        $enabled = $network_value;
+                                }
+                        }
+
+                        return !empty($enabled);
+                }
+
+                private function log_debug($message) {
+                        if ($this->is_debug_enabled()) {
+                                if (is_array($message) || is_object($message)) {
+                                        $message = print_r($message, true);
+                                }
+
+                                error_log($message);
+                        }
+                }
+
+                function debug($var = array()) {
+                        echo '<pre>' . print_r($var, true) . '</pre>';
+                }
 
 
         
@@ -1156,6 +1165,7 @@ function register_ssl_check_endpoint() {
             $save_fn('ocssl_global', 0);
             $save_fn('ocssl_nonsslredirect', 0);
             $save_fn('ocssl_toolsmenu', 0);
+            $save_fn('ocssl_debug', 0);
 
             // Save each submitted field
             foreach ($_POST as $pkey => $pval) {
@@ -1309,7 +1319,15 @@ function register_ssl_check_endpoint() {
 	    }
 	    
 	    global $ocssl;
-        $ocssl->load_plugin_data();
+        
+		// Safety net for odd runtimes (WP-CLI, partial loads, etc.)
+		if (!($ocssl instanceof OCSSL)) {
+			$ocssl = new OCSSL();  // instantiate only if missing
+		}
+
+		if (method_exists($ocssl, 'load_plugin_data')) {
+			$ocssl->load_plugin_data();
+		}
 	    
 	}
 }
